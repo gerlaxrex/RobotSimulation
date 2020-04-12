@@ -1,17 +1,26 @@
+//In this simulation it has been assumed that 100px are equivalent to 100 cm.
+//This is useful in order to also simulate the linear and rotational speed of the robot.
+//One second has been also assumed to be equivalent to 60 frames, or iterations of the 'draw' function.
+
+//Constants for the Pond
 let pondX = 250;
 let pondY = 250;
 let pondMinRadius = 15;
 
-//for obstacle avoidance
+//Values for the Obstacle Avoidance
 let roundsAfter = 0;
 let activated = false;
 
-//Helper for arrays equality (for color detection)
+//Values for the settings
+var play = false;
+var activateKeys = false;
+
+//Helper function for arrays equality (for color detection)
 function arraysEqual(a, b) {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (a.length != b.length) return false;
-
+  
   for (var i = 0; i < a.length; ++i) {
     if (a[i] !== b[i]) return false;
   }
@@ -20,7 +29,7 @@ function arraysEqual(a, b) {
 
 //Declare the Robot
 var Robot = {
-  PosX : 230,
+  PosX : 250,
   PosY : 50,
   speed: 0,
   width: 20,
@@ -29,6 +38,31 @@ var Robot = {
   angle: 0
 };
 
+function playSim(){
+    if(play === false){
+      document.getElementsByName('play')[0].innerText = "Stop";
+      play = true;
+      var posx = Number(document.getElementsByName('posx')[0].value);
+      var posy = Number(document.getElementsByName('posy')[0].value);
+      var angle = Number(document.getElementsByName('angle')[0].value);
+      var frontSensorLenght = Number(document.getElementsByName('fs')[0].value);
+      var rightSensorLenght = Number(document.getElementsByName('rs')[0].value);
+      var leftSensorLenght = Number(document.getElementsByName('ls')[0].value);
+      var backSensorLenght = Number(document.getElementsByName('bs')[0].value);
+      Robot.PosX = posx;
+      Robot.PosY = posy;
+      Robot.angle = angle;
+      dsfront.lenght = frontSensorLenght;
+      dsright.lenght = rightSensorLenght;
+      dsleft.lenght = leftSensorLenght;
+      dsback.lenght = backSensorLenght;
+      redraw();
+    }else{
+      play = false;
+      document.getElementsByName('play')[0].innerText = "Restart";
+    }
+}
+
 //Function for the update of the robot position in the map
 function updatePosition(){
   Robot.PosY = constrain(Robot.PosY + (Robot.speed)*cos(Robot.angle), 20, 480);
@@ -36,7 +70,7 @@ function updatePosition(){
   Robot.angle = Robot.angle + Robot.yaw;
 }
 
-//Distance Sensor Class
+//Distance Sensor Class(it refers to the Robot object)
 class DistanceSensor{
   constructor(PosX, PosY,lenght,angle,offset){
     this.PosX = PosX;
@@ -61,7 +95,7 @@ class DistanceSensor{
     }
   }
   
-  //Function to update position
+  //Function to update position of the sensor
   updatePos(){
     this.PosX = Robot.PosX - this.offset*sin(Robot.angle + this.angle);
     this.PosY = Robot.PosY + this.offset*cos(Robot.angle + this.angle);
@@ -70,7 +104,7 @@ class DistanceSensor{
     this.minDistance = this.lenght;
   }
   
-  //Detect the measurement within the ray lenght
+  //Make a measurement within the detection ray (lenght will mainly be our treshold)
   detect(){
     var i;
     for(i = 1; i <= this.lenght; ++i){
@@ -116,7 +150,6 @@ class PhotoSensor{
 
 //Photosensor Declaration
 var pondsnsr = new PhotoSensor();
-
 
 //Obstacle Avoidance algorithm
 function obstacleAvoidance(){
@@ -184,7 +217,7 @@ function navigate(){
   
   
   //We want to simulate the fact that the robot looks for the pond and goes
-  //In that direction. For now we assume that the robot sees the pond alway from any direction.
+  //In that direction. For now we assume that the robot sees the pond always from any direction.
   
   //Calibration and navigation
   if(Math.abs(angle - robotOrientation) <= 0.01){
@@ -274,9 +307,14 @@ function draw() {
   
 
   //Command the Robot and Compute the new Position of it
-  //keyPressed();
-  navigate();
- 
+  /*if(activateKeys === true){
+    keyPressed();
+  }*/
+
+  if(play === true){
+    navigate();
+  }
+
   dsfront.updatePos();
   dsfront.detect();
   dsleft.updatePos();

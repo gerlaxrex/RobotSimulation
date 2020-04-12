@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My Sketch</title>
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
-    <script src="RobotSimulation.js"></script>
+    <title>Robot Simulation</title>
     <style>
         body{
             background-color: black;
@@ -21,6 +19,90 @@
             margin-bottom: 5px;
             padding: 10px;
         }
+        .title{
+          float: left;
+          width: 100px;
+          text-align: right;
+          padding-right:10px;
+        }
+
+        #settings{
+          float:right;
+          border: solid white 1px;
+          border-radius: 5px;
+          background-color: white;
+          color: black;
+          border-bottom: 1px solid #efefef;
+          margin: 10px;
+          padding-bottom: 10px;
+          width:360px;
+          padding: 5px;
+        }
+
+        #defaultCanvas0{
+          border: red solid 2px;
+        }
+
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 30px;
+          height: 17px;
+        }
+
+        .switch input { 
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 9px;
+          width: 9px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+
+        input:checked + .slider {
+          background-color: rgb(194, 16, 16);
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px rgb(194, 16, 16);
+        }
+
+        input:checked + .slider:before {
+          -webkit-transform: translateX(14px);
+          -ms-transform: translateX(14px);
+          transform: translateX(14px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+          border-radius: 34px;
+        }
+
+        .slider.round:before {
+          border-radius: 50%;
+        }
+
     </style>
   </head>
   <body>
@@ -28,5 +110,25 @@
         <h1>Robot Simulation</h1>
         <h2>Robotics and Design course A.A 2019/20 (Group 3)</h2>
     </div>
+    <div id="settings">
+      <h4>Settings</h4>
+      <form method="POST">
+        <div><label class = "title">PositionX: </label> <input type="text" name="posx" maxlength="3" value="230"/></div>
+        <div><label class="title">PositionY: </label> <input type="text" name="posy" maxlength="3" value="50"/></div>
+        <div><label class="title">Angle: </label> <input type="text" name="angle" maxlength="3" value="0"/></div>
+        <div><label class="title">FrontSensor: </label><input type="text" name="fs" maxlength="3" value="20"/></div>
+        <div><label class="title">RightSensor: </label><input type="text" name="rs" maxlength="3" value="20"/></div>
+        <div><label class="title">LeftSensor: </label><input type="text" name="ls" maxlength="3" value="20"/></div>
+        <div><label class="title">BackSensor: </label><input type="text" name="bs" maxlength="3" value="20"/></div>
+        <!--<div><label class="title">Manual:</label><label class="switch">
+          <input type="checkbox" value="manual">
+          <span class="slider round"></span>
+        </label></div>-->
+        <div><button name="play" type="button" value="Play" onclick="playSim()">Start</button></div>
+      </form>
+    </div>
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
+    <script src="RobotSimulation.js"></script>
   </body>
 </html>

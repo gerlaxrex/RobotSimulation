@@ -10,6 +10,9 @@ let pondMinRadius = 15;
 //Values for the Obstacle Avoidance
 let roundsAfter = 0;
 let activated = false;
+let rotAngle = 0;
+let prevOrientation = 0;
+let obsType = 'static';
 
 //Values for the settings
 var play = false;
@@ -29,8 +32,8 @@ function arraysEqual(a, b) {
 
 //Declare the Robot
 var Robot = {
-  PosX : 250,
-  PosY : 50,
+  PosX : 430,
+  PosY : 350,
   speed: 0,
   width: 20,
   height: 30,
@@ -39,7 +42,7 @@ var Robot = {
 };
 
 function playSim(){
-    if(play === false){
+    if(!play){
       document.getElementsByName('play')[0].innerText = "Stop";
       play = true;
       var posx = Number(document.getElementsByName('posx')[0].value);
@@ -49,6 +52,17 @@ function playSim(){
       var rightSensorLenght = Number(document.getElementsByName('rs')[0].value);
       var leftSensorLenght = Number(document.getElementsByName('ls')[0].value);
       var backSensorLenght = Number(document.getElementsByName('bs')[0].value);
+      var opt1 = document.getElementsByName('obsType')[0];
+      var opt2 = document.getElementsByName('obsType')[1]; 
+      
+      if(opt1.checked){
+        obsType = opt1.value;
+      }else if(opt2.checked){
+        obsType = opt2.value;
+      }
+
+      console.log(obsType);
+      
       Robot.PosX = posx;
       Robot.PosY = posy;
       Robot.angle = angle;
@@ -205,6 +219,59 @@ function obstacleAvoidance(){
 }
 
 
+function obstacleAvoidance2(){
+  var robotOrientation = Math.atan2((Robot.PosY - dsfront.PosY),(Robot.PosX - dsfront.PosX)); //actual robot orientation.
+
+  //Switching off
+  if(activated === true && roundsAfter === 0){
+    activated = false;
+  }
+
+  //Condition for the angle addition  
+  if(activated === true && roundsAfter != 0){
+    if(rotAngle === 90){
+      Robot.speed = 0;
+      Robot.yaw = (1/0.02)/60;
+    }else if(rotAngle === -90){
+      Robot.speed = 0;
+      Robot.yaw = -(1/0.02)/60;
+    }else{
+      Robot.speed = 0;
+      Robot.yaw = (1/0.02)/60;
+    }
+
+    //Condition for stopping the rotation and begin going straight
+    if(Math.abs((prevOrientation + rotAngle*(PI/180) - robotOrientation) <= 0.05) && activated === true){
+      Robot.yaw = 0;
+      Robot.speed= 50/60;
+    }
+    --roundsAfter
+  }
+  
+  //Detection and decision (as described in the flowchart in the document)
+  if(dsfront.obstacle === true && activated === false){
+    activated = true;
+    prevOrientation = robotOrientation;
+    roundsAfter = 200;
+    if(dsright.obstacle === false){
+         rotAngle = 90;
+    }else{
+      if(dsleft.obstacle === false){
+        rotAngle = -90;
+      }else{
+        if(dsback.obstacle === false){
+          rotAngle = 180;
+        }else{
+          rotAngle = 0;
+        }
+      }
+    }
+  }
+
+}
+
+
+
 //Main Navigation function
 function navigate(){
   //Definition of the distance from the pond (Assume always detected)
@@ -232,8 +299,11 @@ function navigate(){
       Robot.yaw = -(1/0.02)/60;
     }
   }
-  
-  obstacleAvoidance();
+  if(obsType == 'static'){
+    obstacleAvoidance2();
+  }else if(obsType == 'dynamic'){
+    obstacleAvoidance();
+  }
   
   //Pondchecking
   pondsnsr.detect();

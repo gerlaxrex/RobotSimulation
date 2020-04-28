@@ -13,6 +13,7 @@ let activated = false;
 let rotAngle = 0;
 let prevOrientation = 0;
 let obsType = 'static';
+let obsMov = 'n';
 
 //Values for the settings
 var play = false;
@@ -53,7 +54,9 @@ function playSim(){
       var leftSensorLenght = Number(document.getElementsByName('ls')[0].value);
       var backSensorLenght = Number(document.getElementsByName('bs')[0].value);
       var opt1 = document.getElementsByName('obsType')[0];
-      var opt2 = document.getElementsByName('obsType')[1]; 
+      var opt2 = document.getElementsByName('obsType')[1];
+      var y = document.getElementsByName('obsMov')[0];
+      var n = document.getElementsByName('obsMov')[1]; 
       
       if(opt1.checked){
         obsType = opt1.value;
@@ -61,7 +64,14 @@ function playSim(){
         obsType = opt2.value;
       }
 
+      if(y.checked){
+        obsMov = y.value;
+      }else if(n.checked){
+        obsMov = n.value;
+      }
+
       console.log(obsType);
+      console.log(obsMov);
       
       Robot.PosX = posx;
       Robot.PosY = posy;
@@ -164,6 +174,40 @@ class PhotoSensor{
 
 //Photosensor Declaration
 var pondsnsr = new PhotoSensor();
+
+
+//class describing robot obstacles in the environment
+class ObstacleRobot{
+  constructor(X,Y,A){
+    this.speed= 0;
+    this.yaw = 0;
+    this.PosX = X;
+    this.PosY = Y;
+    this.angle = A;
+    this.rounds = 50;
+  }
+
+  changeYawSpeed(){
+    if(this.rounds <= 0){
+      this.speed = Math.random()*(50/60);
+      this.yaw = Math.random()*((2/0.020)/60) - ((1/0.020)/60);
+      this.rounds = 50;
+    }else{
+      --this.rounds;
+    }
+  }
+
+
+  updatePosition(){
+    this.changeYawSpeed();
+    /*this.speed = 50/60;
+    this.yaw = ((1/0.020)/60);*/
+    this.PosY = constrain(this.PosY + (this.speed)*cos(this.angle), 20, 480);
+    this.PosX = constrain(this.PosX -(this.speed)*sin(this.angle),20,480);
+    this.angle = this.angle + this.yaw;
+  }
+}
+
 
 //Obstacle Avoidance algorithm
 function obstacleAvoidance(){
@@ -271,7 +315,6 @@ function obstacleAvoidance2(){
 }
 
 
-
 //Main Navigation function
 function navigate(){
   //Definition of the distance from the pond (Assume always detected)
@@ -285,6 +328,7 @@ function navigate(){
   
   //We want to simulate the fact that the robot looks for the pond and goes
   //In that direction. For now we assume that the robot sees the pond always from any direction.
+
   
   //Calibration and navigation
   if(Math.abs(angle - robotOrientation) <= 0.01){
@@ -299,6 +343,8 @@ function navigate(){
       Robot.yaw = -(1/0.02)/60;
     }
   }
+  
+  //Obstacle avoidance algorithm chosen
   if(obsType == 'static'){
     obstacleAvoidance2();
   }else if(obsType == 'dynamic'){
@@ -315,6 +361,13 @@ function navigate(){
   updatePosition();
   
 }
+
+//Obstacle Cars declarations
+car1 = new ObstacleRobot(340,300,0);
+car2 = new ObstacleRobot(220,100,-20);
+car3 = new ObstacleRobot(150,140,-60);
+car4 = new ObstacleRobot(300,240,-10);
+car5 = new ObstacleRobot(280,300,-90);
 
 //Setup Function
 function setup() {
@@ -355,26 +408,58 @@ function draw() {
   clear();
   //Background
   background(230);
-  
+  fill(color(0,0,0));
+  rect(0,0,10,500);
+  rect(0,0,500,10);
+  rect(490,0,10,500);
+  rect(0,490,500,10);
+
   //Pond drawing
   fill(color(0, 0, 255));
   noStroke();
   circle(250,250,50);
-  
-   //Obstacle Drawing
+
+  //Update position of the obstacles
+  if(play === true && obsMov == 'y'){
+    car1.updatePosition();
+    car2.updatePosition();
+    car3.updatePosition();
+    car4.updatePosition();
+    car5.updatePosition();
+  }  
+
+  //Obstacle Drawing
   fill(color(0,0,0));
-  rect(340,300,20,30);
+  
   push();
-  translate(220,100);
-  rotate(20);
-  rect(0,0,20,30);
-  pop();
-  push();
-  translate(50,140);
-  rotate(60);
+  translate(car1.PosX,car1.PosY);
+  rotate(car1.angle);
   rect(0,0,20,30);
   pop();
   
+  push();
+  translate(car2.PosX,car2.PosY);
+  rotate(car2.angle);
+  rect(0,0,20,30);
+  pop();
+  
+  push();
+  translate(car3.PosX,car3.PosY);
+  rotate(car3.angle);
+  rect(0,0,20,30);
+  pop();
+  
+  push();
+  translate(car4.PosX,car4.PosY);
+  rotate(car4.angle);
+  rect(0,0,20,30);
+  pop();
+
+  push();
+  translate(car5.PosX,car5.PosY);
+  rotate(car5.angle);
+  rect(0,0,20,30);
+  pop();
 
   //Command the Robot and Compute the new Position of it
   /*if(activateKeys === true){
